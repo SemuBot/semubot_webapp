@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Prevent user zooming on mobile -->
+  <meta name="viewport" content="width=device-width, initial-scale=0.91, maximum-scale=1, user-scalable=no"/>
+  <title>SemuBot WebApp</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">SemuBot</div>
+    <div class="robot-status" id="robot-status">
+      <span id="conn-indicator" class="conn disconnected">Disconnected</span>
+      <span id="battery-level">Battery: N/A</span>
+    </div>
+  </header>
+  <!-- Mobile UI (touchscreen devices) -->
+  <main class="mobile-ui" style="display:none;">
+    <div class="joystick-container">
+      <div class="joystick-wrapper">
+          <div id="joystick" class="joystick" aria-label="virtual joystick">
+          <div id="knob" class="knob"></div>
+        </div>
+          <!-- Extra quick-select button placed above the chat button (for future uses) -->
+          <button id="quick-btn" class="chat-btn quick-btn" aria-label="Quick">★</button>
+          <!-- Chat quick-select button -->
+          <button id="chat-btn" class="chat-btn" aria-label="Chat">💬</button>
+          <!-- Chat modal (hidden by default) -->
+          <div id="chat-menu" class="chat-menu" aria-hidden="true">
+            <div class="chat-backdrop" data-close="true" aria-hidden="true"></div>
+            <div class="chat-panel" role="dialog" aria-modal="true">
+              <div class="chat-header">
+                <div class="chat-title">Quick chat</div>
+                <button class="chat-close" aria-label="Close chat menu">✕</button>
+              </div>
+              <ul class="chat-options">
+                <!-- Populated dynamically from /static/chat_messages.json -->
+              </ul>
+            </div>
+          </div>
+        <div class="rotate-controls" aria-hidden="false">
+          <button id="rotate-left" class="rotate-btn rotate-left" aria-label="Rotate left">⟲</button>
+          <button id="rotate-right" class="rotate-btn rotate-right" aria-label="Rotate right">⟳</button>
+        </div>
+      </div>
+    </div>
+    <div class="controls">
+      <button id="emergency-btn" class="emergency-btn" aria-label="Emergency stop">EMERGENCY STOP</button>
+      <form id="speech-form" class="speech-form">
+        <label for="speech-text">Text for the robot to speak</label>
+        <textarea id="speech-text" name="message" rows="3" required
+          placeholder="Write something for SemuBot to say"
+          aria-describedby="speech-status"></textarea>
+        <button id="speech-submit" type="submit">Submit</button>
+        <p id="speech-status" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </main>
+
+  <!-- Desktop fallback (non-touch): keep header and show a message -->
+  <main class="desktop-ui" style="display:none;">
+    <div class="desktop-placeholder">
+      <div class="desktop-message">
+        <h2>Mobile Device Required</h2>
+        <p>This application is designed for touch-enabled mobile devices.</p>
+        <p>Please open this page on a smartphone or tablet to control the robot.</p>
+      </div>
+    </div>
+  </main>
+
+  <script src="/static/js/speech.js" defer></script>
+  <!-- Loader: detect touch-capable devices and load joystick scripts only for them -->
+  <script>
+    (function () {
+      function isTouchDevice() {
+        return (('ontouchstart' in window) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints && navigator.msMaxTouchPoints > 0));
+      }
+
+      const mobileUI = document.querySelector('.mobile-ui');
+      const desktopUI = document.querySelector('.desktop-ui');
+
+      if (isTouchDevice()) {
+        // Show mobile UI
+        if (mobileUI) mobileUI.style.display = '';
+        if (desktopUI) desktopUI.style.display = 'none';
+        // Dynamically load required scripts for mobile controls
+        const load = (src) => new Promise((res, rej) => {
+          const s = document.createElement('script');
+          s.src = src; s.async = false;
+          s.onload = res; s.onerror = rej; document.body.appendChild(s);
+        });
+        // Load api, joystick, status in order
+        load('/static/js/api.js').then(() => load('/static/js/joystick.js')).then(() => load('/static/js/status.js')).catch((err) => console.error('Failed to load mobile scripts', err));
+      } else {
+        // Show desktop placeholder only
+        if (desktopUI) desktopUI.style.display = '';
+        if (mobileUI) mobileUI.style.display = 'none';
+        // Load status script for desktop monitoring
+        const load = (src) => new Promise((res, rej) => {
+          const s = document.createElement('script');
+          s.src = src; s.async = false;
+          s.onload = res; s.onerror = rej; document.body.appendChild(s);
+        });
+        load('/static/js/status.js').catch((err) => console.error('Failed to load desktop status script', err));
+      }
+    })();
+
+    const emergencyButton = document.getElementById('emergency-btn');
+    if (emergencyButton) {
+      emergencyButton.addEventListener('click', async () => {
+        emergencyButton.disabled = true;
+        try {
+          if (typeof window.sendEmergencyStop === 'function') {
+            const result = await window.sendEmergencyStop();
+            if (result && result.status === 'ok') {
+              alert('Emergency stop sent!');
+            } else {
+              alert('Emergency stop failed. Please try again.');
+            }
+          } else {
+            console.warn('Emergency stop handler not loaded yet.');
+          }
+        } catch (err) {
+          alert('Emergency stop failed. Please try again.');
+        } finally {
+          emergencyButton.disabled = false;
+        }
+      });
+    }
+  </script>
+</body>
+</html>

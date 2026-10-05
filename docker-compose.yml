@@ -1,0 +1,12 @@
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      ROSBRIDGE_HOST: ${ROSBRIDGE_HOST}
+      ROSBRIDGE_PORT: ${ROSBRIDGE_PORT}
+
+# Run: docker compose up -d
+# if there are changes in code or docker files run: docker compose down
+# and then: docker compose up --build
