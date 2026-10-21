@@ -6,6 +6,13 @@ from api import robot
 
 app = FastAPI(title="SemuBot WebApp")
 
+# Always revalidate, so phones never drive the robot with stale control code
+@app.middleware("http")
+async def no_cache(request, call_next):
+    response = await call_next(request)
+    response.headers["Cache-Control"] = "no-cache"
+    return response
+
 # API routes for robot control and status
 app.include_router(robot.router, prefix="/api/robot")
 

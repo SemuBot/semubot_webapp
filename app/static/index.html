@@ -47,6 +47,14 @@
     </div>
     <div class="controls">
       <button id="emergency-btn" class="emergency-btn" aria-label="Emergency stop">EMERGENCY STOP</button>
+      <div class="mode-control">
+        <div class="mode-label">Speech mode <span id="mode-status"></span></div>
+        <div id="mode-toggle" class="mode-toggle" role="radiogroup" aria-label="Speech mode">
+          <button type="button" data-mode="manual" role="radio" aria-checked="false">Manual</button>
+          <button type="button" data-mode="local" role="radio" aria-checked="false">Local AI</button>
+          <button type="button" data-mode="cloud" role="radio" aria-checked="false">Cloud AI</button>
+        </div>
+      </div>
       <form id="speech-form" class="speech-form">
         <label for="speech-text">Text for the robot to speak</label>
         <textarea id="speech-text" name="message" rows="3" required
@@ -69,7 +77,8 @@
     </div>
   </main>
 
-  <script src="/static/js/speech.js" defer></script>
+  <script src="/static/js/speech.js?v=2" defer></script>
+  <script src="/static/js/mode.js?v=2" defer></script>
   <!-- Loader: detect touch-capable devices and load joystick scripts only for them -->
   <script>
     (function () {
@@ -91,7 +100,7 @@
           s.onload = res; s.onerror = rej; document.body.appendChild(s);
         });
         // Load api, joystick, status in order
-        load('/static/js/api.js').then(() => load('/static/js/joystick.js')).then(() => load('/static/js/status.js')).catch((err) => console.error('Failed to load mobile scripts', err));
+        load('/static/js/api.js?v=2').then(() => load('/static/js/joystick.js?v=2')).then(() => load('/static/js/status.js?v=2')).catch((err) => console.error('Failed to load mobile scripts', err));
       } else {
         // Show desktop placeholder only
         if (desktopUI) desktopUI.style.display = '';
@@ -102,7 +111,7 @@
           s.src = src; s.async = false;
           s.onload = res; s.onerror = rej; document.body.appendChild(s);
         });
-        load('/static/js/status.js').catch((err) => console.error('Failed to load desktop status script', err));
+        load('/static/js/status.js?v=2').catch((err) => console.error('Failed to load desktop status script', err));
       }
     })();
 

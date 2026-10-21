@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-from typing import Optional
+from typing import Literal, Optional
 from services.ros_client import ROSClient
 
 router = APIRouter()
@@ -17,6 +17,11 @@ class MoveCommand(BaseModel):
 class StatusResponse(BaseModel):
     connected: bool
     battery: Optional[float]
+    mode: Optional[str] = None
+
+
+class ModeCommand(BaseModel):
+    mode: Literal['manual', 'local', 'cloud']
 
 
 class ChatMessage(BaseModel):
@@ -46,6 +51,16 @@ def chat_message(msg: ChatMessage):
         return {"status": "error", "error": str(e)}
 
 
+# Ask the brain node to switch speech mode. The status endpoint reports the mode the brain confirms
+@router.post('/mode')
+def set_mode(cmd: ModeCommand):
+    try:
+        ros.publish_mode(cmd.mode)
+        return {"status": "ok", "mode": cmd.mode}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
+
 @router.post('/emergency_stop')
 def emergency_stop():
     try:
@@ -60,6 +75,7 @@ def emergency_stop():
 def robot_status():
     try:
         st = ros.get_status()
-        return StatusResponse(connected=bool(st.get('connected', False)), battery=st.get('battery'))
+        return StatusResponse(connected=bool(st.get('connected', False)), battery=st.get('battery'),
+                              mode=st.get('mode'))
     except Exception:
-        return StatusResponse(connected=False, battery=None)
+        return StatusResponse(connected=False, battery=None, mode=None)

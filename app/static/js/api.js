@@ -35,8 +35,18 @@ async function sendChat(message) {
 
 window.sendChat = sendChat;
 
+// Only one /move request in flight at a time. Calls made meanwhile just mark that the
+// latest state must follow, so a stop can never be overtaken by an older move.
+let moveInFlight = false;
+let movePending = false;
+
 // Send the joystick values to the server. The server handles the forwarding to the robot
 async function sendCombined() {
+    if (moveInFlight) {
+        movePending = true;
+        return null;
+    }
+    moveInFlight = true;
     try {
         // Round values to reduce noise
         const payload = {
@@ -58,6 +68,12 @@ async function sendCombined() {
     } catch (err) {
         console.error("Failed to send combined command:", err);
         throw err;
+    } finally {
+        moveInFlight = false;
+        if (movePending) {
+            movePending = false;
+            sendCombined().catch(() => {});
+        }
     }
 }
 

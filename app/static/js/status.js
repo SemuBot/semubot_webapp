@@ -31,12 +31,15 @@ function initStatus() {
         const pct = Math.round(battery * 100);
         battEl.textContent = `Battery: ${pct}%`;
       }
+
+      if (typeof window.renderMode === 'function') window.renderMode(data.mode);
     } catch (err) {
       connEl.textContent = 'Disconnected';
       connEl.classList.remove('connected');
       connEl.classList.add('disconnected');
       battEl.textContent = 'Battery: N/A';
-      
+      if (typeof window.renderMode === 'function') window.renderMode(null);
+
       console.debug('status poll failed:', err);
     }
   }

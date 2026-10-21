@@ -78,7 +78,7 @@ function initJoystick() {
         // Update current command while dragging
         if (window.currentCmd) {
             window.currentCmd.x = ny;
-            window.currentCmd.y = nx;
+            window.currentCmd.y = -nx; // ROS: +y is left
         }
         scheduleAutoSend();
 
@@ -88,8 +88,8 @@ function initJoystick() {
             lastSent.x = nx;
             lastSent.y = ny;
             sendCombinedUpdate((cmd) => {
-                cmd.x = nx;
-                cmd.y = ny;
+                cmd.x = ny;
+                cmd.y = -nx;
             });
         }
     }
@@ -283,12 +283,12 @@ function initJoystick() {
 
     addPressHandlers(rotateLeft, {
         ignoreMouse: true,
-        onPress: () => startRotate(-0.6),
+        onPress: () => startRotate(0.6),
         onRelease: stopRotate
     });
     addPressHandlers(rotateRight, {
         ignoreMouse: true,
-        onPress: () => startRotate(0.6),
+        onPress: () => startRotate(-0.6),
         onRelease: stopRotate
     });
 
