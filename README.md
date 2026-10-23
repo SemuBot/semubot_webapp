@@ -3,6 +3,8 @@
 SemuBot WebAPP is a touchscreen-first robot control interface built with FastAPI and a static frontend. The application exposes a REST API that forwards movement commands and chat messages to a ROS system via `roslibpy`, and serves a mobile-friendly joystick UI. 
 
 The project is designed for use with a ROS bridge server (`rosbridge_server`) and includes a companion ROS2 speech node that listens for messages published to `/speech_input`.
+
+This repository continues the webapp from Karl Johan Krasilnikov's 2026 thesis, [Krasilnikov-thesis-2026-Webapp](https://github.com/SemuBot/Krasilnikov-thesis-2026-Webapp). The thesis repository keeps the version submitted with the thesis; development continues here.
   
 ## Features
 - Touch joystick and rotation controls for driving the robot
