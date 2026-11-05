@@ -25,11 +25,13 @@ function initStatus() {
         connEl.classList.add('disconnected');
       }
 
+      const voltage = (data.voltage === null || data.voltage === undefined) ? null : Number(data.voltage);
+      const volts = voltage === null ? '' : ` (${voltage.toFixed(1)} V)`;
       if (battery === null) {
-        battEl.textContent = 'Battery: N/A';
+        battEl.textContent = 'Battery: N/A' + volts;
       } else {
         const pct = Math.round(battery * 100);
-        battEl.textContent = `Battery: ${pct}%`;
+        battEl.textContent = `Battery: ${pct}%${volts}`;
       }
 
       if (typeof window.renderMode === 'function') window.renderMode(data.mode);

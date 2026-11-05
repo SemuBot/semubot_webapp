@@ -17,6 +17,7 @@ class MoveCommand(BaseModel):
 class StatusResponse(BaseModel):
     connected: bool
     battery: Optional[float]
+    voltage: Optional[float] = None
     mode: Optional[str] = None
 
 
@@ -76,6 +77,6 @@ def robot_status():
     try:
         st = ros.get_status()
         return StatusResponse(connected=bool(st.get('connected', False)), battery=st.get('battery'),
-                              mode=st.get('mode'))
+                              voltage=st.get('voltage'), mode=st.get('mode'))
     except Exception:
         return StatusResponse(connected=False, battery=None, mode=None)
