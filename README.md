@@ -92,7 +92,11 @@ http://server_ip:8000
 
 - `/speech_input` (std_msgs/String) - client publishes chat messages to this topic for the speech node to speak
 
-- `/battery_level` (std_msgs/Float32) - published by the robot to indicate battery level (expects values from 0.0 to 1.0 representing battery percentage)
+- `/semubot/battery` (sensor_msgs/BatteryState) - published by the robot's battery monitor; the status endpoint reports `percentage` (0.0 to 1.0) and `voltage`
+
+- `/semubot/mode` (std_msgs/String) - client publishes the speech mode to switch to (`manual`, `local`, `cloud`)
+
+- `/semubot/mode_state` (std_msgs/String) - published by the brain node with the current speech mode; shown by the status endpoint
 
 - `/emergency_stop` (std_msgs/Bool) - published by the client to indicate emergency stop status (true for active)
 
