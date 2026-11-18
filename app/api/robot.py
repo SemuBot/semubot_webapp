@@ -2,9 +2,11 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import Literal, Optional
 from services.ros_client import ROSClient
+from services.profile import load_limits
 
 router = APIRouter()
 ros = ROSClient()
+limits = load_limits()
 
 # All fields are numeric and optional on the HTTP side
 # the server will interpret missing values as 0.0
@@ -29,14 +31,17 @@ class ChatMessage(BaseModel):
     message: str
 
 
-# Publish the exact numeric values received from the client to /cmd_vel using the helper function
-# The client is responsible for normalization/scaling
-# TODO double-check the values and filter out wrong values
+def _normalized(value):
+    value = float(value or 0.0)
+    return max(-1.0, min(1.0, value)) if value == value else 0.0  # NaN becomes 0
+
+
+# The client sends -1..1 per axis; the robot profile says what full deflection means in m/s and rad/s
 @router.post("/move")
 def move_robot(cmd: MoveCommand):
-    x = float(cmd.x or 0.0)
-    y = float(cmd.y or 0.0)
-    ang = float(cmd.angular_z or 0.0)
+    x = _normalized(cmd.x) * limits["max_linear_velocity"]
+    y = _normalized(cmd.y) * limits["max_linear_velocity"]
+    ang = _normalized(cmd.angular_z) * limits["max_angular_velocity"]
     ros.publish_cmd_vel(linear_x=x, linear_y=y, angular_z=ang)
     return {"status": "ok", "x": x, "y": y, "angular_z": ang}
 
