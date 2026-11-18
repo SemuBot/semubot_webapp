@@ -53,7 +53,7 @@ git clone https://github.com/SemuBot/semubot_webapp.git
 cd semubot_webapp
 ```
 
-The application can run either on the robot’s onboard computer or on a separate server within the same network. In either case, the `ROSBRIDGE_HOST` must be configured in `.env` accordingly.
+The application can run either on the robot’s onboard computer or on a separate server within the same network. In either case, the `ROSBRIDGE_HOST` must be configured in `.env` accordingly. `SEMUBOT_PROFILE_FILE` may name the robot profile from `semubot_bringup` (`config/profiles/<revision>.yaml`); its `semubot_webapp` section sets the speed at full joystick deflection (`max_linear_velocity`, m/s) and of the rotate buttons (`max_angular_velocity`, rad/s). Without it both are 1.0.
   
 From the project root start the application:
 ```bash
@@ -79,7 +79,7 @@ http://server_ip:8000
 
 ## Notes
 
-- The server forwards `/api/robot/move` payloads directly to ROS on `/cmd_vel`.
+- `/api/robot/move` takes `x`, `y` and `angular_z` in −1..1; the server clamps them, scales them by the profile limits and publishes the result on `/cmd_vel`.
 
 - The speech node must be built and launched within the robot’s ROS2 environment
 
@@ -88,7 +88,7 @@ http://server_ip:8000
 
 ## Used ROS Topics
 
-- `/cmd_vel` (geometry_msgs/Twist) - receives movement commands from the client
+- `/cmd_vel` (geometry_msgs/Twist) - movement commands, scaled to the profile limits
 
 - `/speech_input` (std_msgs/String) - client publishes chat messages to this topic for the speech node to speak
 
